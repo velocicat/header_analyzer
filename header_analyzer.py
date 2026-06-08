@@ -82,7 +82,7 @@ def analyze_header():
     ui.label("Authentication Results")
     ui.table(columns=columns, rows=rows, row_key='method')
 
-    arc_results = msg.get_all('arc-authentication-results')
+    arc_results = msg.get_all('arc-authentication-results') or []
 
     columns = [
             {'name': 'hop', 'label': 'ARC Hop Counter', 'field': 'hop', 'align': 'left'},
