@@ -9,7 +9,7 @@ re_group_parens = r'(\(.*?\))'
 
 class EmailHeader:
     def __init__(self, raw_text):
-        self._raw = raw_text
+        self._raw = raw_text.strip()
         self._mime_msg = email.message_from_string(self._raw)
 
         self.sender_info = self.get_sender_info()
@@ -135,9 +135,15 @@ class AuthenticationInfo:
             k, v = item.split('=', 1)
             result[k] = v
 
+        dkim_domain = None
+        if "header.d" in result:
+            dkim_domain = result["header.d"]
+        elif "header.i" in result:
+            dkim_domain = result["header.i"]
+        
         return DKIMResult(
             verdict=result["dkim"],
-            domain=result["header.i"],
+            domain=dkim_domain
             selector=result["header.s"],
             raw=segment
         )
