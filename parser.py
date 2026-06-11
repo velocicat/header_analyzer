@@ -143,7 +143,7 @@ class AuthenticationInfo:
         
         return DKIMResult(
             verdict=result["dkim"],
-            domain=dkim_domain
+            domain=dkim_domain,
             selector=result["header.s"],
             raw=segment
         )
