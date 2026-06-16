@@ -12,6 +12,7 @@ A Python tool for security analysts that parses raw email headers and surfaces t
 - **Routing reconstruction** — rebuilds the chain of `Received` hops in true chronological order, showing the path a message actually took.
 - **Timezone-aware timestamps** — preserves the original time zone on each hop, making delivery delays and anomalies easy to read.
 - **Browser-based interface** — a lightweight NiceGUI front end for pasting headers and reviewing parsed results.
+- **Offline analysis** - header data never leaves your machine; no pasting sensitive headers into third-party web tools.
 
 ## Requirements
 
