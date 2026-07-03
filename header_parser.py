@@ -3,6 +3,7 @@ import re
 
 import datetime as dt
 
+from email.utils import parsedate_to_datetime
 from dataclasses import dataclass, field
 
 re_group_parens = r'(\(.*?\))'
@@ -125,6 +126,7 @@ class AuthenticationInfo:
             raw=segment
         )
     
+    #TODO Guard against dkim=none. You may get header.from=sender@domain.com (policy=reject) or something like that
     @classmethod
     def _parse_dkim(self, segment):
         
@@ -178,7 +180,7 @@ class RoutingHop:
 
     by: str | None = None
     frm: str | None = None   # 'from' is a keyword, hence the rename
-    for_addr: str | None = None
+    for_address: str | None = None
     timestamp: dt.datetime | None = None
     raw: str = ""
     def __init__(self, hop):
@@ -203,9 +205,25 @@ class RoutingHop:
         for_address = match.group(1) if match else None
         return for_address
     
-    def get_timestamp(self, hop):
-        dt_format = '%a, %d %b %Y %H:%M:%S %z'
-        t = hop.split(';')[-1].strip()
-        t = re.sub(re_group_parens, '', t).strip()
+    def get_timestamp(self, hop: str) -> dt.datetime | None:
+        """Parse the datetime from a received header hop.
+
+        Returns a timezone-aware datetime, or None when no parseable timestamp
+        is present. The datatime convention follows the final ';' in a Received
+        header; if there's no ';', the whole string is tried as a fallback.
+        """
+        candidate = hop.rsplit(';', 1)[-1].strip()
+        if not candidate:
+            return None
         
-        return dt.datetime.strptime(t, dt_format)
+        try:
+            ts = parsedate_to_datetime(candidate)
+        except (TypeError, ValueError):
+            # Malformed or non-RFC date - let caller decide
+            return None
+        
+        # Normalize to aware so downstream hop delay math never mixes
+        # naive and aware datetimes (a missing/blank zone yields naive).
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=dt.timezone.utc)
+        return ts

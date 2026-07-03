@@ -84,14 +84,18 @@ def index():
 
             columns = [
                 {'name': 'hop', 'label': 'Hop', 'field': 'hop', 'required': True, 'align': 'left'},
-                {'name': 'data', 'label': 'Data', 'field': 'data', 'required': True, 'align': 'left'},
+                {'name': 'by', 'label': 'Received By', 'field': 'by', 'required': True, 'align': 'left'},
+                {'name': 'from', 'label': 'Received From', 'field': 'from', 'required': True, 'align': 'left'},
+                {'name': 'for', 'label': 'Received For', 'field': 'for', 'required': True, 'align': 'left'},
+                {'name': 'time', 'label': 'Received At', 'field': 'time', 'required': True, 'align': 'left'},
+                {'name': 'raw', 'label': 'Raw Header', 'field': 'raw', 'required': True, 'align': 'left'},
             ]
 
             rows = []
             hop_number = 1
 
             for hop in header.routing_info:
-                row = {'hop': hop_number, 'data': hop.raw}
+                row = {'hop': hop_number, 'by': hop.by, 'from': hop.frm, 'for': hop.for_address, 'time': hop.timestamp, 'raw': hop.raw}
                 rows.append(row)
                 hop_number += 1
 
