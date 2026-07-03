@@ -61,7 +61,8 @@ class SPFResult:
 @dataclass
 class DKIMResult:
     verdict: str | None = None      # pass / fail / none / neutral / temperror...
-    domain: str | None = None       # from header.i or header.d
+    domain: str | None = None       # from header.d or header.i if no header.d
+    identity: str | None = None         # header.i if present along with header.d
     selector: str | None = None     # from header.s
     raw: dict = field(default_factory=dict)
 
@@ -137,16 +138,15 @@ class AuthenticationInfo:
             k, v = item.split('=', 1)
             result[k] = v
 
-        dkim_domain = None
-        if "header.d" in result:
-            dkim_domain = result["header.d"]
-        elif "header.i" in result:
-            dkim_domain = result["header.i"]
+        dkim_domain = result.get("header.d", "header.i")
+        dkim_identity = result["header.i"]
+        dkim_selector = result["header.s"]
         
         return DKIMResult(
             verdict=result["dkim"],
             domain=dkim_domain,
-            selector=result["header.s"],
+            identity=dkim_identity,
+            selector=dkim_selector,
             raw=segment
         )
     
