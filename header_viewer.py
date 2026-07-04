@@ -68,10 +68,11 @@ def index():
                 )
 
             if header.authentication_info.dkim is not None:
-                rows.append(
-                    {'method': 'DKIM', 'result': header.authentication_info.dkim.verdict, 'detail': header.authentication_info.dkim.raw},
-                )
-
+                for result in header.authentication_info.dkim:
+                    rows.append(
+                        {'method': 'DKIM', 'result': result.verdict, 'detail': result.raw},
+                    )
+                    
             if header.authentication_info.dmarc is not None:
                 rows.append(
                     {'method': 'DMARC', 'result': header.authentication_info.dmarc.verdict, 'detail': header.authentication_info.dmarc.raw}

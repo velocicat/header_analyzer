@@ -21,7 +21,7 @@ class EmailHeader:
         return SenderInfo(self._mime_msg)
     
     def get_authentication_info(self, raw):
-        return AuthenticationInfo.from_header(raw)
+        return AuthenticationInfo.parse(raw)
     
     def get_routing_info(self, raw):
         raw_hops = list(reversed(raw) or [])
@@ -82,27 +82,23 @@ class AuthenticationInfo:
     raw: str = ""
 
     @classmethod
-    def from_header(cls, value: str) -> "AuthenticationInfo":
+    def parse(cls, raw_header: str) -> "AuthenticationInfo":
         spf = None
-        dkim = None
+        dkim = []
         dmarc = None
-        server = None
+        segments = [s.strip() for s in raw_header.split(';')]
 
-        segments = value.split(';')
-        server = segments[0].strip()
+        server = segments[0]
 
-        for segment in segments:
-            segment = segment.strip()
+        for segment in segments[1:]:
             if segment.startswith("spf="):
-                spf = AuthenticationInfo._parse_spf(segment)
+                spf = cls._parse_spf(segment)
+            elif segment.startswith("dkim="):
+                dkim.append(cls._parse_dkim(segment))
+            elif segment.startswith("dmarc="):
+                dmarc = cls._parse_dmarc(segment)
 
-            if segment.startswith("dkim="):
-                dkim = AuthenticationInfo._parse_dkim(segment)
-
-            if segment.startswith("dmarc"):
-                dmarc = AuthenticationInfo._parse_dmarc(segment)
-
-        return cls(spf=spf, dkim=dkim, dmarc=dmarc, server=server, raw=value)
+        return cls(spf=spf, dkim=dkim, dmarc=dmarc, server=server, raw=raw_header)
     
     @classmethod
     def _parse_spf(self, segment):
